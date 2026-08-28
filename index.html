@@ -1,1 +1,572 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Daily Health Planner ☁️</title>
+
+    <!-- PyScript: allows Python to run in the browser -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.3/core.css">
+    <script type="module" src="https://pyscript.net/releases/2026.7.3/core.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Trebuchet MS", Arial, sans-serif;
+            color: #102a43;
+            background: linear-gradient(270deg, #111184 0%, #007BA7 100%);
+            overflow-x: hidden;
+        }
+
+        /* Crescent moons 🌙 */
+        .moon {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fff9c4 0%, #f5d76e 100%);
+            opacity: 0.9;
+            z-index: 0;
+            box-shadow: 0 0 25px rgba(255, 244, 170, 0.35);
+        }
+
+        .moon::after {
+            content: "";
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #111184;
+            top: -15px;
+            left: 28px;
+        }
+
+        .moon1 {
+            top: 12%;
+            left: 5%;
+            transform: scale(1.0);
+        }
+
+        .moon2 {
+            top: 30%;
+            right: 5%;
+            transform: scale(0.8);
+        }
+
+        .moon3 {
+            top: 70%;
+            left: 8%;
+            transform: scale(0.65);
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            width: 90%;
+            max-width: 900px;
+            margin: 50px auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.88);
+            padding: 35px;
+            border-radius: 25px;
+            box-shadow: 0 12px 35px rgba(44, 95, 128, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.8);
+        }
+
+        h1 {
+            text-align: center;
+            color: #174a70;
+            margin-top: 0;
+            font-size: 38px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #47758f;
+            margin-bottom: 30px;
+            font-size: 17px;
+        }
+
+        .date-box {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .date-box input {
+            padding: 10px 15px;
+            border: 2px solid #9bd3ed;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #174a70;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            overflow: hidden;
+            border-radius: 15px;
+            border: 2px solid #a8dced;
+        }
+
+        th {
+            background: #469ff2;
+            color: #073b5c;
+            padding: 15px;
+            font-size: 17px;
+        }
+
+        td {
+            padding: 15px;
+            background: #f5fcff;
+            border-top: 1px solid #c5e8f5;
+        }
+
+        td:first-child {
+            font-weight: bold;
+            color: #174a70;
+            width: 45%;
+        }
+
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 11px;
+            border: 2px solid #b4dfee;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 15px;
+            background: white;
+            color: #102a43;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #55afd5;
+            box-shadow: 0 0 0 3px rgba(85, 175, 213, 0.15);
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .unit {
+            color: #64869b;
+            font-size: 13px;
+            margin-left: 5px;
+        }
+
+        .button-area {
+            text-align: center;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            padding: 14px 28px;
+            margin: 5px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .check-btn {
+            background: #469ff2;
+            color: white;
+        }
+
+        .check-btn:hover {
+            background: #3293ed;
+            transform: translateY(-2px);
+        }
+
+        .reset-btn {
+            background: #d8eef7;
+            color: #174a70;
+        }
+
+        .reset-btn:hover {
+            background: #c2e5f1;
+        }
+
+        #result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: center;
+            background: #e7f8ff;
+            border: 3px solid #83cde8;
+        }
+
+        #result h2 {
+            margin: 0 0 10px;
+            color: #155477;
+            font-size: 30px;
+        }
+
+        #result p {
+            margin: 8px 0;
+            color: #456b7e;
+        }
+
+        .good {
+            background: #e8f8ed !important;
+            border-color: #8bd3a3 !important;
+        }
+
+        .okay {
+            background: #fff8df !important;
+            border-color: #efd477 !important;
+        }
+
+        .bad {
+            background: #fff0f0 !important;
+            border-color: #edaaaa !important;
+        }
+
+        .criteria {
+            margin-top: 25px;
+            padding: 18px;
+            background: #eefaff;
+            border-radius: 15px;
+        }
+
+        .criteria h3 {
+            margin-top: 0;
+            color: #174a70;
+        }
+
+        .criteria ul {
+            line-height: 1.8;
+            color: #456b7e;
+        }
+
+        @media (max-width: 650px) {
+            .container {
+                width: 95%;
+                margin: 20px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 29px;
+            }
+
+            th,
+            td {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            td:first-child {
+                width: 40%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Decorative background -->
+    <div class="moon moon1"></div>
+    <div class="moon moon2"></div>
+    <div class="moon moon3"></div>
+
+    <div class="container">
+        <div class="card">
+
+            <h1>🌙 My Daily Health Planner 🌙</h1>
+
+            <p class="subtitle">
+                Your physical health affects your mental health. Keep both a priority!
+            </p>
+
+            <div class="date-box">
+                <label for="date"><strong>Today's date: </strong></label>
+                <input type="date" id="date">
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Health Check</th>
+                        <th>Your Information</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>How many hours did you sleep?</td>
+                        <td>
+                            <input
+                                type="number"
+                                id="sleep"
+                                min="0"
+                                max="12"
+                                step="0.5"
+                                placeholder="e.g. 8"
+                            >
+                            <span class="unit">hours</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>how many calories did you consume?</td>
+                        <td>
+                            <input
+                                type="number"
+                                id="calories"
+                                min="100"
+                                max="10000"
+                                placeholder="e.g.2000 cal"
+                            >
+                            <span class="unit">
+                                one meal has 400-650 calories.
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>On a scale of 1-10,how happy were you today?</td>
+                        <td>
+                            <input
+                                type="number"
+                                id="happiness"
+                                min="0"
+                                max="10"
+                                placeholder="e.g. 8"
+                            >
+                            <span class="unit">
+                                if you had a rollercoaster day, just input the average
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Water consumed</td>
+                        <td>
+                            <input
+                                type="number"
+                                id="water"
+                                min="0"
+                                max="10"
+                                placeholder="e.g. 7 glasses"
+                            >
+                            <span class="unit">glasses</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>how many friends did you talk to?</td>
+                        <td>
+                            <input
+                                type="number"
+                                id="people"
+                                min="0"
+                                max="100"
+                                placeholder="e.g. 4 friends"
+                            >
+                            <span class="unit">
+                                friends (a friend a day keeps the limiting beliefs at bay)
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="button-area">
+                <button
+                    class="check-btn"
+                    py-click="check_day"
+                >
+                    ✨ Check My Day ✨
+                </button>
+
+                <button
+                    class="reset-btn"
+                    py-click="reset_planner"
+                >
+                    Reset
+                </button>
+            </div>
+
+            <div id="result">
+                <h2 id="resultText"></h2>
+                <p id="resultMessage"></p>
+            </div>
+
+            <div class="criteria">
+                <h3>🌙 What counts as a good day?</h3>
+                <ul>
+                    <li>😴 Sleep: <strong>7–9 hours</strong></li>
+                    <li>🍎 Food: <strong>2000-4000 calories</strong></li>
+                    <li>😊 Happiness: <strong>6–10 / 10</strong></li>
+                    <li>💧 Water: <strong>6–8 glasses</strong></li>
+                    <li>🫶 Social interaction: <strong>2–7 friends</strong></li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- PYTHON -->
+    <script type="py">
+from datetime import date
+from pyscript import document
+
+# Automatically put today's date into the date box
+today = date.today()
+document.getElementById("date").value = today.strftime("%Y-%m-%d")
+
+
+def get_number(element_id):
+    """
+    Get a number from an input box.
+    Returns None if the input is empty or invalid.
+    """
+    value = document.getElementById(element_id).value
+
+    if value == "":
+        return None
+
+    try:
+        return float(value)
+    except ValueError:
+        return None
+
+
+def check_day(event=None):
+
+    # Get values
+    sleep = get_number("sleep")
+    calories = get_number("calories")
+    happiness = get_number("happiness")
+    water = get_number("water")
+    people = get_number("people")
+
+    # Make sure everything has been filled in
+    if (
+        sleep is None
+        or calories is None
+        or happiness is None
+        or water is None
+        or people is None
+    ):
+        # Python can interact with the browser through PyScript
+        from js import alert
+        alert("Please fill in all the information first! 💙")
+        return
+
+    # Check each requirement
+    sleep_good = 7 <= sleep <= 9
+    food_good = 1500 <= calories <= 5000
+    happiness_good = 6 <= happiness <= 10
+    water_good = 6 <= water <= 8
+    people_good = 2 <= people <= 7
+
+    # Count how many requirements were NOT met
+    missed = 0
+
+    if not sleep_good:
+        missed += 1
+
+    if not food_good:
+        missed += 1
+
+    if not happiness_good:
+        missed += 1
+
+    if not water_good:
+        missed += 1
+
+    if not people_good:
+        missed += 1
+
+    # Get result elements
+    result = document.getElementById("result")
+    result_text = document.getElementById("resultText")
+    result_message = document.getElementById("resultMessage")
+
+    # Display result
+    result.style.display = "block"
+
+    # Remove previous colors
+    result.classList.remove("good")
+    result.classList.remove("okay")
+    result.classList.remove("bad")
+
+    # Decide what message to display
+    if missed == 0:
+
+        result_text.textContent = "🌟 VERY GOOD DAY! 🌟"
+        result_message.textContent = (
+            "You took great care of yourself today. Keep it up! 💙"
+        )
+        result.classList.add("good")
+
+    elif missed == 1:
+
+        result_text.textContent = "☀️ GOOD DAY"
+        result_message.textContent = (
+            "You did pretty well! Be proud of yourself."
+        )
+        result.classList.add("good")
+
+    elif 2 <= missed <= 3:
+
+        result_text.textContent = "🌱 TAKE BETTER CARE OF URSELF"
+        result_message.textContent = (
+            "A few important areas were missed today. "
+            "Be a little kinder to yourself tomorrow."
+        )
+        result.classList.add("okay")
+
+    elif missed == 4:
+
+        result_text.textContent = "🥺 Y MUST U DO THIS TO URSELF?"
+        result_message.textContent = (
+            "None of your health goals were met today. Are you ok?"
+        )
+        result.classList.add("bad")
+
+    elif missed == 5:
+
+        result_text.textContent = "🥺 Y MUST U DO THIS TO URSELF?"
+        result_message.textContent = (
+            "None of your health goals were met today. Are you ok?"
+        )
+        result.classList.add("bad")
+
+
+def reset_planner(event=None):
+
+    document.getElementById("sleep").value = ""
+    document.getElementById("calories").value = ""
+    document.getElementById("happiness").value = ""
+    document.getElementById("water").value = ""
+    document.getElementById("people").value = ""
+
+    document.getElementById("result").style.display = "none"
+    </script>
+
+</body>
+</html>
+```
 
